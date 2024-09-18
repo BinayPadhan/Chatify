@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import SearchInput from './SearchInput';
-import Conversation from './Conversation';
 import LogoutBtn from './LogoutBtn';
+import SearchList from './SearchList';
 
 const Sidebar = () => {
   return (
@@ -10,10 +10,7 @@ const Sidebar = () => {
       <SearchInput/>
       </div>
       <hr />
-      <Conversation/>
-      <Conversation/>
-      <Conversation/>
-      <Conversation/>
+      <SearchList/>
       <LogoutBtn/>
     </div>
   );

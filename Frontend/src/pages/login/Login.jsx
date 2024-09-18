@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import useLogin from '../../hooks/useLogin';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  const {loading, login} = useLogin();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Username:', username);
-    console.log('Password:', password);
+    console.log(username, password);
+    await login({username, password});
   };
 
   return (
@@ -41,13 +45,26 @@ const Login = () => {
               placeholder="Enter your password"
             />
           </div>
+
           <div className="flex items-center justify-between">
             <button
               type="submit"
               className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              disabled={loading}
             >
-              Login
+              {loading ? <span className="loading loading-spinner loading-md"></span> : "Login" }
             </button>
+          </div>
+          <div className="mt-4">
+            <span className="text-white dark:text-black">
+              Don't have an account?{" "}
+            </span>
+            <Link
+              to="/signup"
+              className="text-indigo-500 hover:text-indigo-600"
+            >
+              Sign up
+            </Link>
           </div>
         </form>
       </div>

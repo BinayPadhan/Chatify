@@ -4,78 +4,93 @@ import JsonWebToken from '../utils/generateToken.js';
 
 export const signup = async (req, res) => {
     try {
-        const { fullname, username, password, confirmPassword, gender } = req.body;
+        const { fullName, username, password, confirmPassword, gender } = req.body;
 
-        if(password !== confirmPassword) {
+        // Validate password match
+        if (password !== confirmPassword) {
             return res.status(400).json({ message: 'Passwords do not match' });
         }
         
-        const user = await User.findOne({username});
+        // Check if username already exists
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.status(409).json({ message: 'Username already exists' });
+        }
 
-        //https://avatar.iran.liara.run/
+        // Set profile picture based on gender
+        const profilepic = gender === 'male' 
+            ? `https://avatar.iran.liara.run/public/boy?username=${username}`
+            : `https://avatar.iran.liara.run/public/girl?username=${username}`;
 
-        const boyProfile = `https://avatar.iran.liara.run/public/boy?username=${username}`
-        const girlProfile = `https://avatar.iran.liara.run/public/girl?username=${username}`
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 8);
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newUser = new User ({
-            fullname,
+        // Create a new user object
+        const newUser = new User({
+            fullName,
             username,
             password: hashedPassword,
             gender,
-            profilepic: gender === 'male'? boyProfile : girlProfile,
-        })
+            profilepic
+        });
 
-        if(newUser){
-            await newUser.save();
-            JsonWebToken(newUser._id, res);
-            res.status(201).json({ message: 'User registered successfully',
+        // Save the user and issue a JWT token
+        await newUser.save();
+        JsonWebToken(newUser._id, res);
+
+        // Send success response
+        res.status(201).json({
+            message: 'User registered successfully',
             user: {
                 _id: newUser._id,
-                fullname: newUser.fullname,
+                fullName: newUser.fullName,
                 username: newUser.username,
                 profilepic: newUser.profilepic,
-                gender: newUser.gender,
-                password: newUser.password
+                gender: newUser.gender
             }
-         });
-        }
-        else{
-            res.status(400).json({ message: 'Invalid user data' });
-        }
+        });
         
     } catch (error) {
-        console.log("Error", error);
-        res.status(500).json({ message: error.message});
-        
+        console.error("Error during signup:", error);
+        res.status(500).json({ message: 'Server error. Please try again later.' });
     }
-}
+};
 
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body;
-        const user = await User.findOne({ username});
-        const isValid = await bcrypt.compare(password, user.password)
-        if (!user || !isValid) {
-            return res.status(401).json({ message: "Invalid email address or password." });
+
+        // Find the user by username
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(401).json({ message: "Invalid username or password." });
         }
 
+        // Compare passwords
+        const isValid = await bcrypt.compare(password, user.password);
+        if (!isValid) {
+            return res.status(401).json({ message: "Invalid username or password." });
+        }
+
+        // Generate and send JWT token
         JsonWebToken(user._id, res);
+
+        // Respond with user data
         res.status(200).json({
             message: "User logged in successfully",
             user: {
-              _id: user._id,
-              fullname: user.fullname,
-              username: user.username,
-              profilepic: user.profilepic
-            },
-          });
+                _id: user._id,
+                fullName: user.fullName,
+                username: user.username,
+                profilepic: user.profilepic
+            }
+        });
     } catch (error) {
-        console.log("Error: " + error);
-        res.status(500).json({ message: error.message });
+        console.error("Error during login:", error.message); // Use console.error for errors
+        res.status(500).json({ message: 'Server error. Please try again later.' });
     }
-}
+};
+
 
 export const logout = (req, res) => {
     try {

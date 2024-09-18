@@ -1,4 +1,9 @@
+import axios from 'axios';
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import useSignup from '../../hooks/useSignup';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -9,21 +14,12 @@ const Signup = () => {
     gender: '',
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = (e) => {
+  const {loading, signup} = useSignup(); 
+  
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // You can add form validation here
-
-    // Handle form submission, e.g., send data to the backend
-    console.log(formData);
-  };
+    await signup(formData);
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -38,11 +34,11 @@ const Signup = () => {
               type="text"
               id="fullName"
               name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
               className="w-full px-3 py-2 border text-black bg-transparent rounded-md focus:outline-none focus:ring focus:ring-blue-500"
               placeholder="Enter your full name"
               required
+              value={formData.fullName}
+              onChange={(e) => setFormData({...formData, fullName: e.target.value })}
             />
           </div>
           <div className="mb-4">
@@ -53,11 +49,11 @@ const Signup = () => {
               type="text"
               id="username"
               name="username"
-              value={formData.username}
-              onChange={handleChange}
               className="w-full px-3 py-2 border text-black bg-transparent rounded-md focus:outline-none focus:ring focus:ring-blue-500"
               placeholder="Enter your username"
               required
+              value={formData.username}
+              onChange={(e) => setFormData({...formData, username: e.target.value})}
             />
           </div>
           <div className="mb-4">
@@ -68,11 +64,11 @@ const Signup = () => {
               type="password"
               id="password"
               name="password"
-              value={formData.password}
-              onChange={handleChange}
               className="w-full px-3 py-2 border text-black bg-transparent rounded-md focus:outline-none focus:ring focus:ring-blue-500"
               placeholder="Enter your password"
               required
+              value={formData.password}
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
             />
           </div>
           <div className="mb-4">
@@ -83,11 +79,11 @@ const Signup = () => {
               type="password"
               id="confirmPassword"
               name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
               className="w-full px-3 py-2 border text-black bg-transparent rounded-md focus:outline-none focus:ring focus:ring-blue-500"
               placeholder="Confirm your password"
               required
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
             />
           </div>
           <div className="mb-6">
@@ -98,7 +94,7 @@ const Signup = () => {
               id="gender"
               name="gender"
               value={formData.gender}
-              onChange={handleChange}
+              onChange={(e) => setFormData({...formData, gender: e.target.value})}
               className="w-full px-3 py-2 border text-black bg-transparent rounded-md focus:outline-none focus:ring focus:ring-blue-500"
               required
             >
@@ -112,9 +108,21 @@ const Signup = () => {
             <button
               type="submit"
               className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              disabled={loading}
             >
-              Sign Up
+              {loading ? <span className="loading loading-spinner loading-md"></span> : "Sign up" }
             </button>
+          </div>
+          <div className="mt-4">
+            <span className="text-white dark:text-black">
+              Already have an account?{" "}
+            </span>
+            <Link
+              to="/login"
+              className="text-indigo-500 hover:text-indigo-600"
+            >
+              Login
+            </Link>
           </div>
         </form>
       </div>
